@@ -22,7 +22,8 @@ def inital_state(init_age: int, seed: int = 0):
     return np.random.choice([1, 2, 3, 4], p=p_init_state[age_grp])       
 
 
-# ERROR: Potentially something wrong with def of transit probas.
+# ERROR: Potentially something wrong with def of valid transitions. 
+# Need this tmp solution to make sojourn CDF sum to one. 
 def legal_transitions(current_state: int, lambdas: List) -> List:
     
     # TEMP:

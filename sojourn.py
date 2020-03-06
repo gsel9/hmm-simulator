@@ -70,10 +70,10 @@ def cumul_sojourn_time(n: int, current_age: int, current_state: int, t: int) -> 
     kappas = [kappa(current_age, current_state, t, i) for i in range(n + 1)]
     
     return 1.0 - np.exp(sum(kappas))
-    
+
 
 def sojourn_time_cdf(start_age, stop_age, current_state):
-    
+
     time_lapse = int(stop_age - start_age)
 
     cdf = np.zeros(time_lapse, dtype=np.float32)
@@ -88,8 +88,7 @@ def sojourn_time_cdf(start_age, stop_age, current_state):
     return np.array(cdf)
 
 
-# QUESTION: n = l - k + 1 or n = l - k?
-def sojourn_time_lapse(start_age: int, age_max: int, current_state: int, seed: int = 0) -> float:
+def sojourn_time(start_age: int, age_max: int, current_state: int, seed: int = 0) -> float:
     """Estimate the time spent in a given state.
 
     Args:
@@ -104,7 +103,9 @@ def sojourn_time_lapse(start_age: int, age_max: int, current_state: int, seed: i
     np.random.seed(seed)
     u = np.random.uniform(low=0.0, high=1.0)
     
-    t_lower = np.squeeze(np.where(u > sojourn_cdf))[-1]
+    t_lower = np.squeeze(np.where(u > sojourn_cdf))
+    if np.ndim(t_lower) > 0:
+        t_lower = t_lower[-1]
 
     l = age_group_idx(start_age + t_lower)
     k = age_group_idx(start_age)
