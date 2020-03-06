@@ -1,9 +1,30 @@
 from typing import Union, List
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from transition import next_state, inital_state
 from sojourn import sojourn_time 
+
+
+def plot_profile(x, title=None, show=True, path_to_fig=None):
+
+	plt.figure(figsize=(12, 8))
+
+	if title is not None:
+		plt.title(title, fontsize=22)
+
+	plt.plot(x, '-o')
+	plt.yticks(range(1, 5), range(1, 5), fontsize=18)
+	plt.xticks(np.linspace(0, 80, 6, dtype=int), np.linspace(16, 96, 6, dtype=int), fontsize=18)
+	plt.ylabel('State', fontsize=20)
+	plt.xlabel('Years', fontsize=20)
+
+	if show:
+		plt.show()
+
+	if path_to_fig is not None:
+		plt.savefig(path_to_fig)
 
 
 def simulate_profile(init_age, age_max) -> np.ndarray:
@@ -43,15 +64,19 @@ def simulate_profile(init_age, age_max) -> np.ndarray:
 
 if __name__ == '__main__':
 
-	# Simulate five females over 80 years (16-96 yo).
-	num_females = 5
+	# Simulate two females over 80 years (16-96 yo).
+	num_females = 2
 	init_age = 16
-	age_max = 94
+	age_max = 96
 
-	for _ in range(num_females):
+	for num in range(num_females):
+		
+		# Make synth screening history.
 		x = simulate_profile(init_age, age_max)
-		print(x)
 
+		# Display each synth profile.
+		plot_profile(x, show=True, title=f"Synthetic profile: {num + 1}")
+	
 	# NOTE:
 	# Modify `age_partitions` in `utils.py` to adjust the resolution 
 	# of the time domain.
