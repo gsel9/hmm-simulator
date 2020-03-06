@@ -6,6 +6,18 @@ Note:
 import numpy as np
 
 
+age_partitions = np.array([
+    (16, 19),  
+    (20, 24),
+    (25, 29),
+    (30, 34), 
+    (35, 39), 
+    (40, 49), 
+    (50, 59), 
+    (60, 96)
+])
+
+
 # Transition probabilities (age group x state transition).
 lambda_sr = np.array(
     [ 
@@ -34,3 +46,16 @@ p_init_state = np.array(
         [0.96032, 0.02793 ,0.01134, 0.00041]
     ]
 )
+
+
+# TODO: Handle out of bounds age grouping.
+def age_group_idx(age: int):
+    """Returns index for the age group."""
+    
+    for num, (tau_p, tau_pp) in enumerate(age_partitions):
+        
+        if age in range(tau_p, tau_pp + 1):
+            return num
+        
+    #raise ValueError(f'Could not find any group for age {age}')        
+    return num

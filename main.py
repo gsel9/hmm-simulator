@@ -2,10 +2,8 @@ from typing import Union, List
 
 import numpy as np
 
-from generate import (
-	sojourn_time_cdf, sojourn_time, 
-	next_state, inital_state
-)
+from transition import next_state, inital_state
+from sojourn_time import sojourn_time_lapse 
 
 
 # TEMP: Current start_period and end_period assumes x has 80 entries but can be scaled
@@ -27,10 +25,8 @@ def simulate_profile(x: Union[List, np.ndarray], current_age=16, age_max=96):
     
     while x[-1] == 0:
         
-        # Time spent in current state.
-        cdf = sojourn_time_cdf(current_age, age_max, current_state)
-        
-        dt = sojourn_time(cdf, current_age, current_state)
+        # Time spent in current state.        
+        dt = sojourn_time_lapse(current_age, age_max, current_state)
         
         end_period = end_period + int(dt)
         

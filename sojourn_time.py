@@ -1,69 +1,7 @@
-from typing import List
+import numpy as np 
 
-import numpy as np
-
-from probas import lambda_sr, p_init_state
-
-
-age_partitions = np.array([
-    (16, 19),  
-    (20, 24),
-    (25, 29),
-    (30, 34), 
-    (35, 39), 
-    (40, 49), 
-    (50, 59), 
-    (60, 96)
-])
-
-
-def inital_state(init_age: int, seed: int = 0):
-    """Sample state at first screening.
-    
-    Args:
-        x:
-        
-    Returns:
-        
-    """
-    
-    np.random.seed(seed)
-    
-    age_grp = age_group_idx(init_age)
-                  
-    return np.random.choice([1, 2, 3, 4], p=p_init_state[age_grp])       
-
-
-# TODO: Handle out of bounds age grouping.
-def age_group_idx(age: int):
-    """Returns index for the age group."""
-    
-    for num, (tau_p, tau_pp) in enumerate(age_partitions):
-        
-        if age in range(tau_p, tau_pp + 1):
-            return num
-        
-    #raise ValueError(f'Could not find any group for age {age}')        
-    return num
-
-
-# ERROR: Potentially something wrong with def of transit probas.
-def legal_transitions(current_state: int, lambdas: List) -> List:
-    
-    # TEMP:
-    return lambdas
-    
-    # s1 => s2
-    if current_state == 1:
-        return [lambdas[0]]
-    
-    # s2 => s3 or s2 => s1
-    if current_state == 2:
-        return [lambdas[1], lambdas[3]]
-    
-    # s3 => s4 or s3 => s2
-    if current_state == 3:
-        return [lambdas[2], lambdas[4]]
+from utils import lambda_sr, age_partitions, age_group_idx
+from transition import legal_transitions
 
 
 def kappa_0(init_age, current_state, t):
@@ -151,8 +89,7 @@ def sojourn_time_cdf(start_age, stop_age, current_state):
 
 
 # QUESTION: n = l - k + 1 or n = l - k?
-def sojourn_time(sojourn_cdf: np.ndarray, start_age: int,
-                 current_state: int, seed: int = 0) -> float:
+def sojourn_time_lapse(start_age: int, age_max: int, current_state: int, seed: int = 0) -> float:
     """Estimate the time spent in a given state.
 
     Args:
@@ -162,6 +99,8 @@ def sojourn_time(sojourn_cdf: np.ndarray, start_age: int,
         The amount of time a female spends in the current state.
     """
 
+    sojourn_cdf = sojourn_time_cdf(start_age, age_max, current_state)
+
     np.random.seed(seed)
     u = np.random.uniform(low=0.0, high=1.0)
     
@@ -169,54 +108,9 @@ def sojourn_time(sojourn_cdf: np.ndarray, start_age: int,
 
     l = age_group_idx(start_age + t_lower)
     k = age_group_idx(start_age)
-    print(l, k)
+
     # QUESTION: n = l - k + 1 or n = l - k? Using n = l - k + 1 gives less variance.
     s = sum([kappa(start_age, current_state, start_age + t_lower, i) for i in range(1, l - k + 1)])
     scale = sum(legal_transitions(current_state, lambda_sr[l, :]))
 
     return (s - np.log(1 - u)) / scale
-
-
-def next_state(age: int, current_state: int, seed: int = 0) -> int:
-    """Simulate the next state from sojourn time conditions.
-
-    Args:
-        age:
-        current_state: 
-        seed: Reproduce the pseudo-random number generator.
-
-    Returns:
-        The next state.
-
-    Note:
-        * Consider only valid transitions.
-        * Assume successful treatment if cancer (s4) and transits to normal state.
-    """
-
-    # s1 -> s2
-    if current_state == 1:
-        return 2
-
-    # NB: Assume successful treatment and transits to normal state.
-    if current_state == 4:
-        return 1
-
-    np.random.seed(seed)
-
-    age_group = age_group_idx(age)
-
-    # s2 -> s3 or s2 -> s1
-    if current_state == 2:
-        lambdas = [lambda_sr[age_group, 1], lambda_sr[age_group, 3]]
-    
-    # s3 -> s4 or s3 -> s2
-    if current_state == 3:
-        lambdas = [lambda_sr[age_group, 2], lambda_sr[age_group, 4]]
-    
-    # s2 -> s3 or s2 -> s1
-    if current_state == 2:
-        return np.random.choice((3, 1), p=lambdas / sum(lambdas))
-    
-    # s3 -> s4 or s3 -> s2
-    if current_state == 3:
-        return np.random.choice((4, 2), p=lambdas / sum(lambdas))
