@@ -8,7 +8,7 @@ def kappa_0(init_age, current_state, t):
 
     l = age_group_idx(init_age + t)
     
-    s = sum(legal_transitions(current_state, lambda_sr[l], norm=True))
+    s = sum(legal_transitions(current_state, lambda_sr[l], norm=False))
 
     return -1.0 * t * s
 
@@ -21,8 +21,8 @@ def kappa_1(age, current_state, t):
     l = age_group_idx(age + t)
     tau_l = age_partitions[l][0]
     
-    s_k = (age - tau_kp) * sum(legal_transitions(current_state, lambda_sr[k], norm=True))
-    s_l = (tau_l - age) * sum(legal_transitions(current_state, lambda_sr[l], norm=True))
+    s_k = (age - tau_kp) * sum(legal_transitions(current_state, lambda_sr[k], norm=False))
+    s_l = (tau_l - age) * sum(legal_transitions(current_state, lambda_sr[l], norm=False))
     
     return s_k + s_l
     
@@ -36,7 +36,7 @@ def kappa_m(age, current_state, m):
     tau_km = age_partitions[km][1]
     tau_kmm = age_partitions[kmm][0]
 
-    s_kmm = sum(legal_transitions(current_state, lambda_sr[kmm, :], norm=True))
+    s_kmm = sum(legal_transitions(current_state, lambda_sr[kmm, :], norm=False))
     
     return (tau_kmm - tau_km) * s_kmm
 
@@ -79,16 +79,13 @@ def sojourn_time_cdf(start_age, stop_age, current_state):
     time_lapse = int(stop_age - start_age + 1)
 
     cdf = np.zeros(time_lapse, dtype=np.float32)
-    
+
     k = age_group_idx(start_age)
     for t in range(1, time_lapse):
         
         l = age_group_idx(start_age + t)
         
         cdf[t] = cumul_sojourn_time(l - k, start_age, current_state, t)
-
-    # TEMP (HACK): Need also use cdf = np.zeros(time_lapse + 1, dtype=np.float32) 
-    #cdf[-1] = 1
 
     return np.array(cdf)
 

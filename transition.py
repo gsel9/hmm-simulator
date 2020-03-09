@@ -89,3 +89,7 @@ def next_state(age: int, current_state: int, death: int = 0,
         return np.random.choice((1, death), p=p)
 
     return death
+
+
+if __name__ == '__main__':
+    next_state(16, 2)
