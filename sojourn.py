@@ -66,7 +66,7 @@ def cumul_sojourn_time(n: int, current_age: int, current_state: int, t: int) -> 
         The cumulative distribution for the sojourn time evaluated at time t.
     """
 
-    # NB: Range over n + 1 for additional age paritions <= 7 (as expected).
+    # NB: Adjust to Python counting logic.
     kappas = [kappa(current_age, current_state, t, i) for i in range(n + 1)]
     
     return 1.0 - np.exp(sum(kappas))
@@ -74,7 +74,8 @@ def cumul_sojourn_time(n: int, current_age: int, current_state: int, t: int) -> 
 
 def sojourn_time_cdf(start_age, stop_age, current_state):
 
-    time_lapse = int(stop_age - start_age)
+	# NOTE: Adjust to Python counting logic.
+    time_lapse = int(stop_age - start_age + 1)
 
     cdf = np.zeros(time_lapse, dtype=np.float32)
     
@@ -97,10 +98,13 @@ def sojourn_time(start_age: int, age_max: int, current_state: int, seed: int = 0
     Returns:
         The amount of time a female spends in the current state.
     """
+    
+    if current_state == 0:
+        return age_max
 
     sojourn_cdf = sojourn_time_cdf(start_age, age_max, current_state)
 
-    np.random.seed(seed)
+    #np.random.seed(seed)
     u = np.random.uniform(low=0.0, high=1.0)
     
     t_lower = np.squeeze(np.where(u > sojourn_cdf))
@@ -110,7 +114,7 @@ def sojourn_time(start_age: int, age_max: int, current_state: int, seed: int = 0
     l = age_group_idx(start_age + t_lower)
     k = age_group_idx(start_age)
 
-    # QUESTION: n = l - k + 1 or n = l - k? Using n = l - k + 1 gives less variance.
+    # NB: Adjust to Python counting logic.
     s = sum([kappa(start_age, current_state, start_age + t_lower, i) for i in range(1, l - k + 1)])
     scale = sum(legal_transitions(current_state, lambda_sr[l, :]))
 
