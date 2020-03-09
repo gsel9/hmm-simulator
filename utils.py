@@ -18,6 +18,7 @@ age_partitions = np.array([
 ])
 
 
+# ERROR: Row probabilities do not sum to 1.
 # Transition probabilities (age group x state transition).
 lambda_sr = np.array(
     [ 

@@ -72,7 +72,8 @@ def simulate_profile(init_age, age_max) -> np.ndarray:
 
 
 if __name__ == '__main__':
-
+	# TODO: Use simulate_profile(num_timepoints) and scale the ranges specified in age_partitions. 
+	
 	init_age = 16
 	age_max = 96
 
