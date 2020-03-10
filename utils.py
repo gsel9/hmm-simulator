@@ -1,13 +1,19 @@
 """
-Note:
-    * Round-off errors from truncation of transition probabilities.
+Key:
+    N0 = 1
+    L1 = 2
+    H2 = 3
+    C3 = 4
+    D5 = 5
+
+NB: Round-off errors from truncation of transition intensities/probabilities.
 """
 
 import numpy as np
 
 
 age_partitions = np.array([
-    (16, 19),  
+    (0, 19),  
     (20, 24),
     (25, 29),
     (30, 34), 
@@ -18,11 +24,10 @@ age_partitions = np.array([
 ])
 
 
-# ERROR: Row probabilities do not sum to 1.
-# Transition probabilities (age group x state transition).
+# Transition intensities (age group x state transition).
 lambda_sr = np.array(
     [ 
-        # 0 -> 1  1 -> 2   2 -> 3   1 -> 0  2 -> 1  0 -> 4   1 -> 4   2 -> 4  3 -> 4
+        # 1 -> 2  2 -> 3   3 -> 4   2 -> 1  3 -> 2  1 -> 5   2 -> 5   3 -> 5   4 -> 5
         [0.01991, 0.01666, 0.00251, 0.1771, 0.2262, 0.00002, 0.00016, 0.00241, 0.01817], 
         [0.01202, 0.02526, 0.00025, 0.1550, 0.1079, 0.00006, 0.00017, 0.00083, 0.03025],
         [0.00731, 0.04176, 0.00014, 0.1448, 0.0811, 0.00012, 0.00020, 0.00168, 0.03286],
@@ -37,7 +42,7 @@ lambda_sr = np.array(
 
 # Initial state probabilities (age group x probability initial state).
 p_init_state = np.array(
-    [
+    [   
         [0.93020, 0.06693, 0.00263, 0.00024],
         [0.92937, 0.06228, 0.00821, 0.00014],
         [0.93383, 0.04945, 0.01654, 0.00017],
@@ -50,9 +55,13 @@ p_init_state = np.array(
 )
 
 
-# TODO: Handle out of bounds age grouping.
-def age_group_idx(age: int):
-    """Returns index for the age group."""
+# TODO: Handle ages out of group bounds.
+def age_group_idx(age: int) -> int:
+    """Determine the group membership of a given age value.
+    
+    Returns:
+        An index corresponding to the group label.
+    """
     
     for num, (tau_p, tau_pp) in enumerate(age_partitions):
         

@@ -1,8 +1,8 @@
-# TODO: Simulate dropout time with data from empirical dropout dist.
+# TODO: Simulate dropout time with empirical data.
 def dropout():
 	pass
 
 
-# TODO: Randomly remove screenings according to some criteria.
-def irregular_screenings():
+# TODO: Select screening intervals from empirical data.
+def screening():
 	pass
