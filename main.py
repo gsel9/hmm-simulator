@@ -7,45 +7,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from transition import next_state, inital_state
+from sparsify import sparsen_profle
+from plotting import plot_profile
 from sojourn import sojourn_time 
 
 
-def plot_profile(x, axis, title=None, show=True, path_to_fig=None):
-
-	if title is not None:
-		plt.title(title, fontsize=22)
-		
-	axis.plot(x, '-o')
-
-	axis.set_yticks(range(0, 5))
-	axis.set_yticklabels(['D4', 'N0', 'L1', 'H2', 'C3'], fontsize=18)
-	axis.set_ylabel('State', fontsize=20)
-
-	axis.set_xticks(np.linspace(0, 80, 6, dtype=int))
-	axis.set_xticklabels(np.linspace(16, 96, 6, dtype=int), fontsize=18)
-	axis.set_xlabel('Years', fontsize=20)
-
-	plt.tight_layout()
-
-	if show:
-		plt.show()
-
-	if path_to_fig is not None:
-		plt.savefig(path_to_fig)
-
-
-def simulate_profile(init_age, age_max) -> np.ndarray:
+def simulate_profile(n_timepoints, init_age, age_max, stepsize=0, 
+                     missing=0, sparsen=True) -> np.ndarray:
     """Update the profile vector of a single female. 
 
     Args:
-    	init_age: Age at first screening.
-    	age_max: Age at final screening.
+        init_age: Age at first screening.
+        age_max: Age at final screening.
 
     Returns:
-    	Simulated screening history for one single female.
+        Simulated screening history for one single female.
     """
 
-    x = np.ones(int(age_max - init_age)) * -1
+    x = np.ones(int(n_timepoints)) * missing
 
     # Initial state.
     current_state = inital_state(init_age=init_age)
@@ -54,48 +33,68 @@ def simulate_profile(init_age, age_max) -> np.ndarray:
     current_age = init_age
 
     # Counters. 
-    start_period = 0
-    end_period = 1
+    start_period = init_age
+    end_period = 0
     num_iter = 0
 
-    while x[-1] == -1:
+    while current_age < age_max:
 
-    	# Time spent in current state.
-    	dt = sojourn_time(current_age, age_max, current_state)
+        # Time spent in current state.
+        dt = sojourn_time(current_age, age_max, current_state)
 
-    	end_period = end_period + int(dt)
-    	current_age = current_age + int(dt)
+        end_period = end_period + int(dt)
+        current_age = current_age + int(dt)
 
-    	x[start_period:end_period] = current_state
+        x[start_period:end_period] = current_state
 
-    	start_period = end_period
-    	prev_state = current_state
+        start_period = end_period
+        prev_state = current_state
 
-    	# Update profile values with current state.
-    	current_state = next_state(age=current_age, current_state=current_state, censoring=0)
+        # Update profile values with current state.
+        current_state = next_state(age=current_age, current_state=current_state, censoring=0)
 
-    	# To avoid endless loop.
-    	num_iter += 1
-    	if num_iter > len(x):
-    		raise RuntimeError('Endless loop. Check config!')
+        # To avoid endless loop.
+        num_iter += 1
+        if num_iter > len(x):
+            raise RuntimeError('Endless loop. Check config!')
+
+    if sparsen:
+        return sparsen_profle(x, init_age, age_max, stepsize=stepsize, missing=missing)
 
     return x
 
 
 if __name__ == '__main__':
-	# Demo run displaying profiles.
+    # Demo run displaying profiles.
 
-	init_age = 16
-	age_max = 96
+    n_timepoints = 321
 
-	_, axes = plt.subplots(nrows=5, ncols=3, figsize=(15, 15))
-	for axis in axes.ravel():
-		
-		# Make synth screening history.
-		x = simulate_profile(init_age, age_max)
-		
-		# Add profile to figure.
-		plot_profile(x, axis, show=False)
+    # Age at inital screening.
+    proba_init_age = np.load('/Users/sela/phd/data/real/Pinit_screen_2Krandom.npy')
 
-	plt.show()
-	
+    # Age at final screening.
+    proba_dropout = np.load('/Users/sela/phd/data/real/Pdropout_2Krandom.npy')
+
+    #time = np.linspace(16, 96, n_timepoints)
+    time = np.linspace(0, n_timepoints - 1, n_timepoints)
+
+    _, axes = plt.subplots(nrows=4, ncols=3, figsize=(10, 10))
+    for axis in axes.ravel():
+
+        init_age_idx = np.random.choice(range(n_timepoints), p=proba_init_age)
+
+        start_age = int(time[init_age_idx])
+
+        p = proba_init_age[init_age_idx:] / sum(proba_init_age[init_age_idx:])
+        end_age = int(np.random.choice(time[init_age_idx:], p=p))
+
+        # Sanity check.
+        assert start_age < end_age + 1
+        
+        # Make synth screening history.
+        x = simulate_profile(n_timepoints, start_age, end_age, sparsen=True, stepsize=12)
+
+        # Add profile to figure.
+        plot_profile(x, axis, show=False)
+
+    plt.show()

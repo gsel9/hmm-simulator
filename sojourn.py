@@ -70,7 +70,7 @@ def eval_sojourn_time(n: int, age: int, current_state: int, t: int) -> float:
     """
 
     # NB: Adjust to Python count logic.
-    kappas = [kappa(age, current_state, t, i) for i in range(n + 1)]
+    kappas = [kappa(age, current_state, t, i) for i in range(n)]
     
     return 1.0 - np.exp(sum(kappas))
 
@@ -83,7 +83,7 @@ def sojourn_time_cdf(start_age, stop_age, current_state) -> np.ndarray:
         The CDF evaluated at times t from start_age to stop_age.
     """
 
-	# NOTE: Adjust to Python counting logic.
+    # NOTE: Adjust to Python counting logic.
     time_lapse = int(stop_age - start_age + 1)
 
     cdf = np.zeros(time_lapse, dtype=np.float32)
@@ -100,7 +100,6 @@ def sojourn_time_cdf(start_age, stop_age, current_state) -> np.ndarray:
 
 def sojourn_time(start_age: int, age_max: int, current_state: int) -> float:
     """Estimate the time that will spent in a given state.
-
     Args:
         start_age: 
         age_max:  
@@ -114,7 +113,7 @@ def sojourn_time(start_age: int, age_max: int, current_state: int) -> float:
     if current_state == 0:
         return age_max
 
-    sojourn_cdf = sojourn_time_cdf(0, age_max, current_state)
+    sojourn_cdf = sojourn_time_cdf(start_age, age_max, current_state)
 
     # Corollary 1, step 1.
     u = np.random.uniform(low=0.0, high=1.0)
@@ -131,7 +130,7 @@ def sojourn_time(start_age: int, age_max: int, current_state: int) -> float:
     l = age_group_idx(start_age + t_lower)
 
     # NB: Adjust to Python count logic and start sum from 1.
-    sum_k = sum([kappa(start_age, current_state, start_age + t_lower, i) for i in range(1, l - k + 1)])
+    sum_k = sum([kappa(start_age, current_state, start_age + t_lower, i) for i in range(1, l - k)])
     sum_p = sum(legal_transitions(current_state, lambda_sr[l, :]))
 
     # Step 4.
@@ -148,4 +147,10 @@ if __name__ == '__main__':
     plt.figure()
     plt.plot(cdf)
     plt.show()
-
+    
+    #print(sojourn_time(16, 36, 1))
+    #for a in np.linspace(16, 96, 5, int):
+    #    for b in np.linspace(a, 96, 5, int):
+    #        print(sojourn_time(a, b, 1))
+            #print(a, b, sojourn_time(a, b, 1))
+    

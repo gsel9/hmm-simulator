@@ -12,7 +12,7 @@ def inital_state(init_age: int) -> int:
     """Sample the state at first screening."""
     
     age_grp = age_group_idx(init_age)
-                  
+
     return np.random.choice([1, 2, 3, 4], p=p_init_state[age_grp])       
 
 
@@ -31,7 +31,7 @@ def legal_transitions(current_state: int, lambdas: List, norm: bool = False) -> 
     
     # Censoring.
     if current_state == 0:
-    	return
+        return
     
     # s1 -> s2 or s1 -> censoring.
     if current_state == 1:
@@ -47,10 +47,10 @@ def legal_transitions(current_state: int, lambdas: List, norm: bool = False) -> 
 
     # s4 -> s1 or s4 -> censoring.
     if current_state == 4:
-	    l_sr = [1 - lambdas[8], lambdas[8]]
+        l_sr = [1 - lambdas[8], lambdas[8]]
 
     if not norm:
-    	return np.array(l_sr)
+        return np.array(l_sr)
 
     return np.array(l_sr) / sum(l_sr)
 
