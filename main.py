@@ -3,6 +3,8 @@
 
 from typing import Union, List
 
+from tqdm import tqdm
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -68,6 +70,7 @@ if __name__ == '__main__':
     # Demo run displaying profiles.
 
     n_timepoints = 321
+    n_samples = 5000
 
     # Age at inital screening.
     proba_init_age = np.load('/Users/sela/phd/data/real/Pinit_screen_2Krandom.npy')
@@ -78,8 +81,10 @@ if __name__ == '__main__':
     #time = np.linspace(16, 96, n_timepoints)
     time = np.linspace(0, n_timepoints - 1, n_timepoints)
 
-    _, axes = plt.subplots(nrows=4, ncols=3, figsize=(10, 10))
-    for axis in axes.ravel():
+    X = []
+    for _ in tqdm(range(n_samples)):
+    #_, axes = plt.subplots(nrows=4, ncols=3, figsize=(10, 10))
+    #for axis in axes.ravel():
 
         init_age_idx = np.random.choice(range(n_timepoints), p=proba_init_age)
 
@@ -89,12 +94,13 @@ if __name__ == '__main__':
         end_age = int(np.random.choice(time[init_age_idx:], p=p))
 
         # Sanity check.
-        assert start_age < end_age + 1
-        
+        #assert start_age < end_age + 1
+        #start_age = 0
+        #end_age = 320
         # Make synth screening history.
         x = simulate_profile(n_timepoints, start_age, end_age, sparsen=True, stepsize=12)
-
+        X.append(x)
         # Add profile to figure.
-        plot_profile(x, axis, show=False)
-
-    plt.show()
+        #plot_profile(x, axis, show=False)
+    #plt.show()
+    

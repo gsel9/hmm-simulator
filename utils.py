@@ -9,6 +9,7 @@ NB: Round-off errors from truncation of transition intensities/probabilities.
 """
 
 import numpy as np
+import pandas as pd
 
  
 age_groups = np.array([
@@ -71,3 +72,9 @@ def age_group_idx(age: int) -> int:
         
     #raise ValueError(f'Could not find any group for age {age}')        
     return num
+
+
+def profiles_to_csv(X, path_to_file):
+
+    df = pd.DataFrame(X)
+    df.to_csv(path_to_file, index=False, header=False)
