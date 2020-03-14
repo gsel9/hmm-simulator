@@ -3,8 +3,8 @@
 
 import numpy as np 
 
-from utils import lambda_sr, age_partitions, age_group_idx
-from transition import legal_transitions
+from .utils import lambda_sr, age_partitions, age_group_idx
+from .transition import legal_transitions
 
 
 def kappa_0(init_age, current_state, t) -> float:

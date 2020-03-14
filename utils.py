@@ -11,6 +11,8 @@ NB: Round-off errors from truncation of transition intensities/probabilities.
 import numpy as np
 import pandas as pd
 
+
+NUM_TIMEPOINTS = 321
  
 age_groups = np.array([
     (16, 19),  
@@ -23,7 +25,7 @@ age_groups = np.array([
     (60, 96)
 ])
 
-age_partitions = ((age_groups - 16) / 96) * 321
+age_partitions = ((age_groups - 16) / 96) * NUM_TIMEPOINTS 
 
 
 # Transition intensities (age group x state transition).
@@ -78,3 +80,33 @@ def profiles_to_csv(X, path_to_file):
 
     df = pd.DataFrame(X)
     df.to_csv(path_to_file, index=False, header=False)
+
+
+def sample_start_age(n_timepoints, proba_init_age, return_idx=True):
+    """
+    Returns:
+        Age at inital screening.
+    """
+    
+    # Randomly select location of initial age along a defined time axis.
+    time = np.linspace(0, n_timepoints - 1, n_timepoints)
+    
+    init_age_idx = np.random.choice(range(n_timepoints), p=proba_init_age)
+    init_age = int(time[init_age_idx])
+    
+    if return_idx:
+        return init_age, init_age_idx
+    
+    return init_age
+
+
+def sample_end_age(n_timepoints, proba_dropout, init_age_idx=0):
+    """
+    Returns:
+        Age at final screening.
+    """
+    time = np.linspace(0, n_timepoints - 1, n_timepoints)
+    
+    p = proba_dropout[init_age_idx:] / sum(proba_dropout[init_age_idx:])
+    
+    return int(np.random.choice(time[init_age_idx:], p=p))

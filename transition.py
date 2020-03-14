@@ -5,7 +5,7 @@ from typing import List, Union
 
 import numpy as np
 
-from utils import age_group_idx, lambda_sr, p_init_state
+from .utils import age_group_idx, lambda_sr, p_init_state
 
 
 def inital_state(init_age: int) -> int:

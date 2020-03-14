@@ -8,14 +8,14 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 
-from transition import next_state, inital_state
-from sparsify import sparsen_profle
-from plotting import plot_profile
-from sojourn import sojourn_time 
+from .transition import next_state, inital_state
+from .sparsify import sparse_profle
+from .plotting import plot_profile
+from .sojourn import sojourn_time 
 
 
 def simulate_profile(n_timepoints, init_age, age_max, stepsize=0, 
-                     missing=0, sparsen=True) -> np.ndarray:
+                     missing=0, sparse=True) -> np.ndarray:
     """Update the profile vector of a single female. 
 
     Args:
@@ -60,8 +60,8 @@ def simulate_profile(n_timepoints, init_age, age_max, stepsize=0,
         if num_iter > len(x):
             raise RuntimeError('Endless loop. Check config!')
 
-    if sparsen:
-        return sparsen_profle(x, init_age, age_max, stepsize=stepsize, missing=missing)
+    if sparse:
+        return sparse_profle(x, init_age, age_max, stepsize=stepsize, missing=missing)
 
     return x
 
@@ -78,29 +78,26 @@ if __name__ == '__main__':
     # Age at final screening.
     proba_dropout = np.load('/Users/sela/phd/data/real/Pdropout_2Krandom.npy')
 
-    #time = np.linspace(16, 96, n_timepoints)
     time = np.linspace(0, n_timepoints - 1, n_timepoints)
 
-    X = []
-    for _ in tqdm(range(n_samples)):
-    #_, axes = plt.subplots(nrows=4, ncols=3, figsize=(10, 10))
-    #for axis in axes.ravel():
+    _, axes = plt.subplots(nrows=4, ncols=3, figsize=(10, 10))
+    for axis in axes.ravel():
 
         init_age_idx = np.random.choice(range(n_timepoints), p=proba_init_age)
 
         start_age = int(time[init_age_idx])
 
-        p = proba_init_age[init_age_idx:] / sum(proba_init_age[init_age_idx:])
+        p = proba_dropout[init_age_idx:] / sum(proba_dropout[init_age_idx:])
         end_age = int(np.random.choice(time[init_age_idx:], p=p))
 
         # Sanity check.
-        #assert start_age < end_age + 1
-        #start_age = 0
-        #end_age = 320
+        assert start_age < end_age + 1
+       
         # Make synth screening history.
-        x = simulate_profile(n_timepoints, start_age, end_age, sparsen=True, stepsize=12)
-        X.append(x)
+        x = simulate_profile(n_timepoints, start_age, end_age, sparse=True, stepsize=12)
+       
         # Add profile to figure.
-        #plot_profile(x, axis, show=False)
-    #plt.show()
+        plot_profile(x, axis, show=False)
+    
+    plt.show()
     
