@@ -1,23 +1,38 @@
 import numpy as np
 
-from .utils import age_group_idx
+from .utils import sample_start_age, sample_end_age
 
 
-def sparse_profle(x, start_age, max_age, stepsize=3, missing=0):
+def sample_screenings(X, stepsize, proba_init_age=None, proba_dropout=None, missing=0):
 
-	# Keep obs every stepsize years.
-	if isinstance(stepsize, int):
+	n_timepoints = X.shape[1]
 
-		to_keep = np.arange(start_age, max_age, 1)[::stepsize]
-		
-		x_sparse = np.ones_like(x) * missing
+	X_sparse = []
+	for num, x in enumerate(X):	
+
+		if proba_init_age is None:
+			min_age = np.argmax(x)
+
+		else:
+			min_age, min_age_idx = sample_start_age(n_timepoints, proba_init_age)
+
+		if proba_dropout is None:
+			max_age = np.argmax(np.cumsum(x))
+
+		else:
+			max_age = sample_end_age(n_timepoints, proba_dropout, min_age_idx)
+
+		# Sanity check.
+		assert min_age < max_age + 1
+
+		to_keep = np.arange(min_age, max_age, 1)[::stepsize]
+
+		x_sparse = np.zeros_like(x)
 		x_sparse[to_keep] = x[to_keep]
+		
+		if sum(x[to_keep]) == 0:
+			continue
 
-	return x_sparse
+		X_sparse.append(x_sparse)
 
-
-if __name__ == '__main__':
-	import numpy as np
-	x = np.arange(81)
-
-	print(sparsen(x, 0, 80, 3))
+	return np.array(X_sparse)

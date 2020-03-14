@@ -9,13 +9,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from .transition import next_state, inital_state
-from .sparsify import sparse_profle
 from .plotting import plot_profile
 from .sojourn import sojourn_time 
 
 
-def simulate_profile(n_timepoints, init_age, age_max, stepsize=0, 
-                     missing=0, sparse=True) -> np.ndarray:
+def simulate_profile(n_timepoints, init_age, age_max, missing=0) -> np.ndarray:
     """Update the profile vector of a single female. 
 
     Args:
@@ -60,14 +58,11 @@ def simulate_profile(n_timepoints, init_age, age_max, stepsize=0,
         if num_iter > len(x):
             raise RuntimeError('Endless loop. Check config!')
 
-    if sparse:
-        return sparse_profle(x, init_age, age_max, stepsize=stepsize, missing=missing)
-
     return x
 
 
 if __name__ == '__main__':
-    # Demo run displaying profiles.
+    # Demo run.
 
     n_timepoints = 321
     n_samples = 5000
@@ -94,7 +89,7 @@ if __name__ == '__main__':
         assert start_age < end_age + 1
        
         # Make synth screening history.
-        x = simulate_profile(n_timepoints, start_age, end_age, sparse=True, stepsize=12)
+        x = simulate_profile(n_timepoints, start_age, end_age)
        
         # Add profile to figure.
         plot_profile(x, axis, show=False)
