@@ -1,24 +1,27 @@
-"""
+"""State transition logic for the HMM simulator.
+
+Provides functions for sampling the initial state and the next state
+given the current state and age, using age-stratified transition intensities.
 """
 
-from typing import List, Union
+from typing import List
 
 import numpy as np
 
 from .utils import age_group_idx, lambda_sr, p_init_state
 
 
-def inital_state(init_age: int) -> int:
+def initial_state(init_age: int) -> int:
     """Sample the state at first screening."""
-    
     age_grp = age_group_idx(init_age)
+    return np.random.choice([1, 2, 3, 4], p=p_init_state[age_grp])
 
-    return np.random.choice([1, 2, 3, 4], p=p_init_state[age_grp])       
 
-
-def legal_transitions(current_state: int, lambdas: List, norm: bool = False) -> np.ndarray:
-    """Extract transition intensities for the enabled state shifts given the 
-    current state.  
+def legal_transitions(
+    current_state: int, lambdas: List, norm: bool = False
+) -> np.ndarray:
+    """Extract transition intensities for the enabled state shifts given the
+    current state.
 
     Args:
         current_state:
@@ -28,26 +31,28 @@ def legal_transitions(current_state: int, lambdas: List, norm: bool = False) -> 
     Returns:
         Transition intensities relevant for the current state.
     """
-    
     # Censoring.
     if current_state == 0:
-        return
-    
+        return np.array([])
+
     # s1 -> s2 or s1 -> censoring.
     if current_state == 1:
         l_sr = [lambdas[0], lambdas[5]]
-    
+
     # s2 -> s3 or s2 -> s1 or -> censoring.
-    if current_state == 2:
+    elif current_state == 2:
         l_sr = [lambdas[1], lambdas[3], lambdas[6]]
-    
+
     # s3 -> s4 or s3 -> s2 or -> censoring.
-    if current_state == 3:
+    elif current_state == 3:
         l_sr = [lambdas[2], lambdas[4], lambdas[7]]
 
     # s4 -> s1 or s4 -> censoring.
-    if current_state == 4:
+    elif current_state == 4:
         l_sr = [1 - lambdas[8], lambdas[8]]
+
+    else:
+        return np.array([])
 
     if not norm:
         return np.array(l_sr)
@@ -60,14 +65,15 @@ def next_state(age: int, current_state: int, censoring: int = 0) -> int:
 
     Args:
         age:
-        current_state: 
+        current_state:
         censoring: Representation of censoring.
 
     Returns:
         The next state.
     """
-
-    p = legal_transitions(current_state, lambda_sr[age_group_idx(age)], norm=True)
+    p = legal_transitions(
+        current_state, lambda_sr[age_group_idx(age)], norm=True
+    )
 
     # s1 -> s2 or s1 -> censoring.
     if current_state == 1:
@@ -76,11 +82,11 @@ def next_state(age: int, current_state: int, censoring: int = 0) -> int:
     # s2 -> s3 or s2 -> s1 or -> censoring.
     if current_state == 2:
         return np.random.choice((3, 1, censoring), p=p)
-    
+
     # s3 -> s4 or s3 -> s2 or -> censoring.
     if current_state == 3:
         return np.random.choice((4, 2, censoring), p=p)
-    
+
     # s4 -> s1 or s4 -> censoring.
     if current_state == 4:
         return np.random.choice((1, censoring), p=p)

@@ -9,4 +9,13 @@ description = "A Python implementation of HMM ... algorithm"
 authors = [{ name="Severin Elvatun" }]
 license = "MIT"
 readme = "README.md"
-dependencies = ["numpy", "scipy"]
+dependencies = ["numpy", "scipy", "matplotlib", "tqdm"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[project.optional-dependencies]
+dev = ["pytest"]

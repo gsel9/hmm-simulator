@@ -54,26 +54,30 @@ p_init_state = np.array(
         [0.95348, 0.03226, 0.01400, 0.00026],
         [0.95543, 0.03309, 0.01132, 0.00016],
         [0.96316, 0.02806, 0.00847, 0.00031],
-        [0.96032, 0.02793 ,0.01134, 0.00041]
+        [0.96032, 0.02793, 0.01134, 0.00041]
     ]
 )
 
 
-# TODO: Handle ages out of group bounds.
 def age_group_idx(age: int) -> int:
     """Determine the group membership of a given age value.
-    
-    Returns:
-        An index corresponding to the group label.
-    """
-    
-    for num, (tau_p, tau_pp) in enumerate(age_partitions):
 
-        if age in range(int(tau_p), int(tau_pp) + 1):
-            return num
-        
-    #raise ValueError(f'Could not find any group for age {age}')        
-    return num
+    Args:
+        age: A timepoint index in [0, NUM_TIMEPOINTS).
+
+    Returns:
+        An index into age_partitions corresponding to the age group.
+
+    Raises:
+        ValueError: If age is outside the range of all partitions.
+    """
+    starts = age_partitions[:, 0].astype(int)
+    idx = int(np.searchsorted(starts, age, side='right')) - 1
+
+    if idx < 0 or age > int(age_partitions[-1, 1]):
+        raise ValueError(f'Age {age} is outside the range of defined age partitions.')
+
+    return idx
 
 
 def profiles_to_csv(X, path_to_file):
@@ -97,7 +101,7 @@ def sample_start_age(n_timepoints, proba_init_age, return_idx=True):
     if return_idx:
         return init_age, init_age_idx
     
-    return init_age
+    return init_age, None
 
 
 def sample_end_age(n_timepoints, proba_dropout, init_age_idx=0):
