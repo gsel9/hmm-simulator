@@ -30,3 +30,11 @@ cc-hmm/
 └── CI config (e.g., .github/workflows/tests.yml)
 
 Include a pyproject.toml for packaging. This enables pip install cc_hmm.
+
+
+## Overview
+## Features
+## Installation (pip install my-algorithm)
+## Basic usage
+## Citing your work (if research-based)
+## Links to documentation
